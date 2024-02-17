@@ -2,14 +2,13 @@ const mongoose = require("mongoose");
 
 const connectToMongoDB = async () => {
   try {
-    const connectionUrl = process.env.MONGODB_URI || "mongodb://localhost:27017/database";
+    const connectionUrl =
+      process.env.MONGODB_URI || "mongodb://localhost:27017/database";
     await mongoose.connect("mongodb://localhost:27017/database", {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      useCreateIndex: true, // Optional: Prevent deprecation warning
-      useFindAndModify: false, // Optional: Prevent deprecation warning
     });
-    console.log("Connected to MongoDB");
+    console.log("Connected to MongoDB, connection URL:", connectionUrl);
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);
   }
