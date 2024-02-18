@@ -10,6 +10,9 @@ import ForgetPassword from "./routes/ForgetPassword";
 import Login from "./routes/Login";
 import Signup from "./routes/Signup";
 import UserProfile from "./routes/UserProfile";
+import Success from "./routes/Success";
+import Cancel from "./routes/Cancel";
+ 
 
 const App = () => {
   return (
@@ -36,6 +39,8 @@ const App = () => {
             </ProtectedRoute>
           }
         />
+          <Route path="/success" element={<Success />} />
+          <Route path="/cancel" element={<Cancel />} />
       </Routes>
     </Router>
   );
