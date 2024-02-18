@@ -11,6 +11,7 @@ const paymentRouter = require("./src/routes/payment.routes");
 
 const app = express();
 const port = 3000; // You can change this port if needed
+require("dotenv").config();
 
 // Connect to MongoDB
 connectToMongoDB();
