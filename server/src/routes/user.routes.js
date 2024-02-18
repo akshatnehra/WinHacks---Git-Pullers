@@ -17,5 +17,7 @@ router.get("/:email", userController.getUserByEmail);
 
 router.post("/balance", userController.getUserBalance);
 
+router.post("/add-funds", userController.addFunds);
+
 module.exports = router;
 // Path: server/src/routes/user.routes.js

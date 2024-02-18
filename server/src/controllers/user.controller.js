@@ -69,6 +69,20 @@ async function getUserBalance(req, res) {
   } 
 }
 
+// Add funds to user wallet
+async function addFunds(req, res) {
+  try {
+    const { email, amount } = req.body;
+    const user = await User.findOne({ email: email });
+    user.wallet_balance += parseFloat(amount);
+    await user.save();
+    res.json({ message: "Funds added successfully" });
+  } catch (error) {
+    console.error("Error adding funds:", error);
+    res.status(500).json({ message: "Error adding funds" });
+  }
+}
+
 module.exports = {
   getAllUsers,
   getUserById,
@@ -77,4 +91,5 @@ module.exports = {
   deleteUser,
   getUserByEmail,
   getUserBalance,
+  addFunds,
 };
