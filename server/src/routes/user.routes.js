@@ -17,7 +17,7 @@ router.get("/:email", userController.getUserByEmail);
 
 router.post("/balance", userController.getUserBalance);
 
-router.post("/add-funds", userController.addFunds);
+router.post("/add-funds", bodyParser.raw({type: 'application/json'}), userController.addFunds);
 
 module.exports = router;
 // Path: server/src/routes/user.routes.js

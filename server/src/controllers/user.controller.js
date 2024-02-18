@@ -1,5 +1,10 @@
 
 const User = require("../models/user.model");
+require("dotenv").config();
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+
 // get all users
 async function getAllUsers(req, res) {
   const users = await User.find();
@@ -69,19 +74,42 @@ async function getUserBalance(req, res) {
   } 
 }
 
-// Add funds to user wallet
-async function addFunds(req, res) {
+async function addFundsFromStripe(email, amount) {
   try {
-    const { email, amount } = req.body;
     const user = await User.findOne({ email: email });
-    user.wallet_balance += parseFloat(amount);
+    if (!user) throw new Error("User not found");
+
+    user.wallet_balance += amount;
     await user.save();
-    res.json({ message: "Funds added successfully" });
+    console.log(`Funds added successfully to ${email}`);
   } catch (error) {
-    console.error("Error adding funds:", error);
-    res.status(500).json({ message: "Error adding funds" });
+    console.error("Error adding funds from Stripe:", error);
   }
 }
+
+// Add funds to user wallet
+async function addFunds(req, res) {
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+  } catch (err) {
+    console.log(`Webhook Error: ${err.message}`);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+    const email = session.metadata.email; // Adjust as per your implementation
+    const amount = session.amount_total / 100; // Stripe amounts are in cents
+
+    await addFundsFromStripe(email, amount);
+    console.log("Funds added successfully from Stripe webhook.");
+  }
+
+  res.json({received: true});
+};
 
 module.exports = {
   getAllUsers,
