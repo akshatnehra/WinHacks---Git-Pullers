@@ -90,25 +90,31 @@ async function addFundsFromStripe(email, amount) {
 // Add funds to user wallet
 async function addFunds(req, res) {
   const sig = req.headers['stripe-signature'];
+
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+      event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
   } catch (err) {
-    console.log(`Webhook Error: ${err.message}`);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+      console.log(`Webhook Error: ${err.message}`);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
+  // Handle successful checkout session completion
   if (event.type === 'checkout.session.completed') {
-    const session = event.data.object;
-    const email = session.metadata.email; // Adjust as per your implementation
-    const amount = session.amount_total / 100; // Stripe amounts are in cents
+      const session = event.data.object;
+      // Metadata should contain email if set during checkout session creation
+      const email = session.metadata.email;
+      const amount = session.amount_total / 100; // Convert from cents to dollars
 
-    await addFundsFromStripe(email, amount);
-    console.log("Funds added successfully from Stripe webhook.");
+      // Add funds to user's account
+      await addFundsFromStripe(email, amount);
+      console.log("Funds added successfully from Stripe webhook.");
+      res.json({received: true});
+  } else {
+      console.log(`Unhandled event type ${event.type}`);
+      res.json({received: true});
   }
-
-  res.json({received: true});
 };
 
 module.exports = {
