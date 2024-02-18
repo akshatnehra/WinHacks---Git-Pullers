@@ -48,7 +48,7 @@ const NavBar = () => {
                 to="/user-profile"
                 className="text-gray-800 hover:text-purple-600 transition duration-300"
                 >
-                Profile
+                Orders
               </Link>
             </>
           )}

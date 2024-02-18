@@ -19,6 +19,16 @@ const Signup = () => {
     setError(""); 
     try {
       await signup(email, password);
+
+      // Post request to backend to create a user
+      const response = await fetch(import.meta.env.VITE_REACT_APP_BASE_URL + "/users", {
+        method: "POST",
+            headers: {
+            "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email: email }),
+        });
+
       navigate("/"); 
     } catch (error) {
       console.error("Error signing up:", error);
