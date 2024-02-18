@@ -1,25 +1,37 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import { useCart } from "../context/CartContext";
 
 const GameDetails = () => {
   const { gameId } = useParams();
+  const [ game, setGame ] = useState(null);
 
-  // Dummy data
-  const game = {
-    id: gameId,
-    title: `Game Title ${gameId}`,
-    imageUrl: `https://source.unsplash.com/random/640x360?game&sig=${gameId}`,
-    description:
-      "Embark on a journey through mystical lands and unravel the mysteries of ancient powers. This game offers an immersive experience with stunning visuals, captivating storytelling, and dynamic gameplay. Join the adventure and become a legend.",
-    price: "59.99",
-    screenshots: [
-      `https://source.unsplash.com/random/640x360?gameplay&sig=${gameId + 1}`,
-      `https://source.unsplash.com/random/640x360?gameplay&sig=${gameId + 2}`,
-      `https://source.unsplash.com/random/640x360?gameplay&sig=${gameId + 3}`,
-    ],
-  };
+  useEffect(() => {
+    const fetchGameData = async () => {
+      try {
+        const response = await fetch(
+          import.meta.env.VITE_REACT_APP_BASE_URL + "/gameItems/" + gameId
+        ); // Assuming `gameId` is available
+        const data = await response.json();
+        
+        let gameData = {
+          id: data._id,
+          title: data.title,
+          imageUrl: data.banner,
+          description: data.description,
+          price: data.originalPrice,
+          screenshots: data.screenshots,
+        }
+
+        setGame(gameData); // Assuming you have a state [gameData, setGameData] to hold this data
+      } catch (error) {
+        console.error("Failed to fetch game details:", error);
+      }
+    };
+
+    fetchGameData();
+  }, [gameId]);
 
   const { addToCart } = useCart();
 
@@ -27,6 +39,11 @@ const GameDetails = () => {
     addToCart(game);
     console.log("Added to cart:", game);
   };
+
+  // Conditional rendering before data is loaded
+  if (!game) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <>

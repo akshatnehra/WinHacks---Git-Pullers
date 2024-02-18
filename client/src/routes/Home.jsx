@@ -13,36 +13,49 @@ const Home = () => {
 
   useEffect(() => {
     const fetchGames = async () => {
-      // Featured games at top of the page
-      const allCategories = ["Featured", ...categories.slice(1)];
-      const gameImages = await Promise.all(
-        allCategories.map(async (category, index) => ({
-          id: index,
-          title: `${category} Game ${index + 1}`,
-          category,
-          imageUrl: `https://source.unsplash.com/random/400x300?${category.toLowerCase()}`,
-          featured: Math.random() < 0.5,
-          price: `${(Math.random() * 50 + 15).toFixed(2)}`,
-        }))
+      const gamesData = await fetch(
+        import.meta.env.VITE_REACT_APP_BASE_URL + "/gameItems"
       );
-      setGames(gameImages);
+      const data = await gamesData.json();
+      console.log(data);
+      const gameData = [];
+
+      data.forEach((element) => {
+        gameData.push({
+          id: element._id,
+          title: element.title,
+          category: element.category,
+          imageUrl: element.banner,
+          // Featured if its inside elements.tags array
+          featured: element.tags.some(
+            (tag) => tag.toLowerCase() === "featured"
+          ),
+          price: element.originalPrice,
+        });
+      });
+
+      setGames(gameData);
       setFilteredGames(
-        gameImages.filter((game) => game.featured || selectedCategory === "All")
+        gameData.filter((game) => game.featured || selectedCategory === "All")
       );
     };
 
     fetchGames();
-  }, [selectedCategory]);
+  }, []);
 
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
-    setSearchTerm(""); // Reset search term when category changes
-    // Filter games based on the selected category
-    setFilteredGames(
-      games.filter((game) =>
-        category === "All" ? game.featured : game.category === category
-      )
-    );
+    console.log("Selected Category:", category); // Debugging
+
+    const updatedFilteredGames =
+      category === "All"
+        ? games
+        : games.filter(
+            (game) => game.category.toLowerCase() === category.toLowerCase()
+          );
+
+    console.log("Filtered Games:", updatedFilteredGames); // Debugging
+    setFilteredGames(updatedFilteredGames);
   };
 
   const { addToCart } = useCart();
