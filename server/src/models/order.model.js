@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const orderItemSchema = new mongoose.Schema({
   gameItemId: { type: mongoose.Schema.Types.ObjectId, ref: "GameItem" },
+  name: { type: String, required: true },
   quantity: { type: Number, required: true },
   price: { type: Number, required: true },
 });
@@ -9,7 +10,8 @@ const orderItemSchema = new mongoose.Schema({
 const orderSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   items: [orderItemSchema],
-  totalPrice: { type: Number, required: true },
+  total: { type: Number, required: true },
+  date: { type: Date, default: Date.now },
   status: {
     type: String,
     enum: ["Pending", "Confirmed", "Shipped", "Delivered"],
