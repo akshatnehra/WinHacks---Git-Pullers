@@ -1,11 +1,14 @@
-import React, { useState } from "react";
-import NavBar from "../components/NavBar"; // Adjust import path as needed
+import React, { useState, useEffect } from "react";
+import NavBar from "../components/NavBar";
+import { useAuth } from "../context/AuthContext";
 
 const UserProfile = () => {
+  const { currentUser } = useAuth();
+  const [userBalance, setUserBalance] = useState(0);
+
+  const email = currentUser.email;
   // Simulated user data - replace with actual data fetching logic
   const [userData, setUserData] = useState({
-    email: "user@example.com",
-    walletBalance: 150.0,
     orders: [
       {
         id: 1,
@@ -25,6 +28,31 @@ const UserProfile = () => {
     ],
   });
 
+  useEffect(() => {
+    const fetchUserWalletBalance = async () => {
+      const data = {
+        email: currentUser.email,
+      };
+
+      // Options for the fetch request
+      const requestOptions = {
+        method: "POST", // Specify the request method
+        headers: { "Content-Type": "application/json" }, // Headers to specify the type of content being sent
+        body: JSON.stringify(data), // Convert the JavaScript object to a JSON string
+      };
+
+      const url = import.meta.env.VITE_REACT_APP_BASE_URL + "/users/balance";
+      // Fetch user wallet balance from the server
+      fetch(url, requestOptions)
+        .then((response) => response.json()) // Convert the response data to JSON
+        .then((data) => setUserBalance(data.balance)) // Handle the JSON data/response
+        .catch((error) => console.error("Error:", error)); // Catch and log any errors
+    };
+    if (currentUser) {
+      fetchUserWalletBalance();
+    }
+  }, [userBalance]);
+
   return (
     <>
       <NavBar />
@@ -33,11 +61,10 @@ const UserProfile = () => {
         <div className="bg-white shadow rounded-lg p-4 mb-6">
           <h3 className="text-xl font-semibold mb-2">Account Details</h3>
           <p>
-            <strong>Email:</strong> {userData.email}
+            <strong>Email:</strong> {email}
           </p>
           <p>
-            <strong>Wallet Balance:</strong> $
-            {userData.walletBalance.toFixed(2)}
+            <strong>Wallet Balance:</strong> ${userBalance.toFixed(2)}
           </p>
         </div>
         <div className="bg-white shadow rounded-lg p-4">
