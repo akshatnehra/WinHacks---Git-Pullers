@@ -7,6 +7,8 @@ const gameItemSchema = new mongoose.Schema({
   offerPrice: { type: Number, required: true },
   discount: { type: Number, required: true },
   stock: { type: Number, required: true },
+  banner: { type: String, required: true },
+  screenshots: { type: [String], required: true },
   platform: {
     type: String,
     enum: ["PS4", "Xbox", "PC", "Nintendo Switch"],
@@ -14,13 +16,21 @@ const gameItemSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ["Action", "Adventure", "Role-Playing", "Simulation", "Strategy"],
+    enum: ["Action", "Adventure", "Racing", "Puzzle"],
     required: true,
-    },
-    tags:{
-        type: [String],
-        enum: ["Singleplayer", "Multiplayer", "Co-op", "Online", "Offline","Bestseller"],
-    }
+  },
+  tags: {
+    type: [String],
+    enum: [
+      "Singleplayer",
+      "Multiplayer",
+      "Co-op",
+      "Online",
+      "Offline",
+      "Bestseller",
+      "Featured",
+    ],
+  },
   // Other game item properties like release date, genre, etc.
 });
 
