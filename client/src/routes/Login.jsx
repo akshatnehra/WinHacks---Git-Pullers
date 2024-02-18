@@ -16,7 +16,7 @@ const Login = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError(""); // Reset error state on new submission
+    setError(""); 
     try {
       await login(email, password);
       navigate(from, { replace: true });

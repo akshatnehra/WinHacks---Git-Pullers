@@ -10,6 +10,8 @@ import ForgetPassword from "./routes/ForgetPassword";
 import Login from "./routes/Login";
 import Signup from "./routes/Signup";
 import UserProfile from "./routes/UserProfile";
+import GameDetails from "./routes/GameDetails";
+import AddFunds from "./routes/AddFunds";
 
 const App = () => {
   return (
@@ -18,6 +20,8 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="cart" element={<Cart />} />
         <Route path="forget-password" element={<ForgetPassword />} />
+        <Route path="/game/:gameId" element={<GameDetails />} />
+        <Route path="/add-funds" element={<AddFunds />} />
         <Route path="/login" element={
           <PublicRoute>
             <Login />

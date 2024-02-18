@@ -16,10 +16,10 @@ const Signup = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError(""); // Reset error state on new submission
+    setError(""); 
     try {
       await signup(email, password);
-      navigate("/"); // Redirect to home or dashboard after successful signup
+      navigate("/"); 
     } catch (error) {
       console.error("Error signing up:", error);
       if (error.code === "auth/email-already-in-use") {
