@@ -55,8 +55,10 @@ const CartItem = ({ item }) => {
 };
 
 const Cart = () => {
-  const { cartItems } = useContext(CartContext);
+  const { cartItems, clearCart } = useContext(CartContext);
   const [userWalletBalance, setUserWalletBalance] = useState(100.0);
+
+  const isCartEmpty = cartItems.length === 0;
 
   const totalCartAmount = cartItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
@@ -66,23 +68,56 @@ const Cart = () => {
 
   const { currentUser } = useAuth();
   let navigate = useNavigate();
-  const handleCheckout = () => {
+
+
+  const handleCheckout = async () => {
     if (!currentUser) {
       navigate("/login"); // Redirect to login if not logged in
       return;
     }
 
     if (!isBalanceSufficient) {
-      alert(
-        "There is not enough balance in your wallet to complete this purchase."
-      );
-    } else {
-      alert("Purchase successful!");
-      // Clear cart and perform other actions as needed
-      // setUserWalletBalance((prevBalance) => prevBalance - totalCartAmount);
-      // setCartItems([]);
+      alert("There is not enough balance in your wallet to complete this purchase.");
+      return;
+    }
+
+    // Prepare the data to be sent to the API
+    const paymentData = {
+      email: currentUser.email,
+      items: cartItems.map((item) => ({
+        game: item.id,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+      amount: totalCartAmount,
+    };
+
+    // Options for the fetch request
+    const requestOptions = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(paymentData),
+    };
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_REACT_APP_BASE_URL}/payments`, requestOptions);
+      const data = await response.json();
+
+      if (data && response.ok) {
+        // Clear the cart
+        clearCart();
+
+        alert("Purchase successful!");
+        navigate("/user-profile"); // Redirect to orders page
+      } else {
+        throw new Error(data.message || "Payment failed");
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+      alert("An error occurred during the payment process. Please try again.");
     }
   };
+
 
   useEffect(() => {
     const fetchUserWalletBalance = async () => {
@@ -141,13 +176,17 @@ const Cart = () => {
           <button
             onClick={handleCheckout}
             className={`w-full mt-4 text-white font-bold py-2 px-4 rounded ${
-              isBalanceSufficient && currentUser
+              !isCartEmpty && isBalanceSufficient && currentUser
                 ? "bg-blue-500 hover:bg-blue-600"
                 : "bg-red-500 cursor-not-allowed"
             }`}
-            disabled={!isBalanceSufficient || !currentUser}
+            disabled={!isBalanceSufficient || !currentUser || isCartEmpty}
           >
-            {currentUser ? "Purchase" : "Log In to Purchase"}
+            {isCartEmpty
+              ? "Add Items to Purchase"
+              : currentUser
+              ? "Purchase"
+              : "Log In to Purchase"}
           </button>
         </div>
       </div>

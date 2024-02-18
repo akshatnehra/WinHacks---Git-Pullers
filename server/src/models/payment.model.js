@@ -1,19 +1,39 @@
 const mongoose = require("mongoose");
 
 const paymentSchema = new mongoose.Schema({
-  orderId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Order",
+  email: {
+    type: String,
     required: true,
   },
-  amount: { type: Number, required: true },
-  paymentMethod: { type: String, required: true },
-  status: {
+  orderId: {
     type: String,
-    enum: ["Pending", "Completed", "Failed"],
-    default: "Pending",
+    required: true,
   },
-  // Other payment properties like transaction ID, payment date, etc.
+  paymentDate: {
+    type: Date,
+    required: true,
+    default: Date.now
+  },
+  items: [{
+    game: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Game",
+      required: true
+    },
+    quantity: {
+      type: Number,
+      required: true,
+      min: 1
+    },
+    price: {
+      type: Number,
+      required: true
+    }
+  }],
+  amount: {
+    type: Number,
+    required: true
+  },
 });
 
 const Payment = mongoose.model("Payment", paymentSchema);

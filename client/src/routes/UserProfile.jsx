@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 const UserProfile = () => {
   const { currentUser } = useAuth();
   const [userBalance, setUserBalance] = useState(0);
+  const [orderHistory, setOrderHistory] = useState([]);
 
   const email = currentUser.email;
   // Simulated user data - replace with actual data fetching logic
@@ -48,10 +49,39 @@ const UserProfile = () => {
         .then((data) => setUserBalance(data.balance)) // Handle the JSON data/response
         .catch((error) => console.error("Error:", error)); // Catch and log any errors
     };
+
+    const fetchOrderHistory = async () => {
+      try {
+        const response = await fetch(
+          `${
+            import.meta.env.VITE_REACT_APP_BASE_URL
+          }/payments/get-user-payments`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: currentUser.email }),
+          }
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log("Order History:", data);
+        if (Array.isArray(data)) {
+          setOrderHistory(data); // Update only if data is an array
+        } else {
+          console.error("Fetched order history is not an array:", data);
+        }
+      } catch (error) {
+        console.error("Error fetching order history:", error);
+      }
+    };
+
     if (currentUser) {
       fetchUserWalletBalance();
+      fetchOrderHistory();
     }
-  }, [userBalance]);
+  }, [currentUser, userBalance]);
 
   return (
     <>
@@ -68,45 +98,43 @@ const UserProfile = () => {
           </p>
         </div>
         <div className="bg-white shadow rounded-lg p-4">
-          <h3 className="text-xl font-semibold mb-4">Order History</h3>
-          {userData.orders.map((order, index) => (
-            <div key={index} className="mb-4">
-              <h4 className="font-semibold text-lg mb-2">
-                Order ID: {order.id} - Date: {order.date}
-              </h4>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr>
-                      <th className="border-b-2 p-2">Item</th>
-                      <th className="border-b-2 p-2">Quantity</th>
-                      <th className="border-b-2 p-2">Price</th>
-                      <th className="border-b-2 p-2">Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {order.items.map((item, itemIndex) => (
-                      <tr key={itemIndex} className="hover:bg-gray-100">
-                        <td className="p-2">{item.name}</td>
-                        <td className="p-2">{item.quantity}</td>
-                        <td className="p-2">${item.price.toFixed(2)}</td>
-                        <td className="p-2">
-                          ${(item.quantity * item.price).toFixed(2)}
-                        </td>
-                      </tr>
-                    ))}
-                    <tr>
-                      <td colSpan="3" className="text-right font-semibold p-2">
-                        Order Total:
-                      </td>
-                      <td className="p-2">${order.total.toFixed(2)}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ))}
-        </div>
+  <h3 className="text-xl font-semibold mb-4">Order History</h3>
+  {orderHistory.map((order, index) => (
+    <div key={order._id} className="mb-8"> 
+      <h4 className="font-semibold text-lg mb-2">
+        Order ID: {order._id} - Date: {new Date(order.paymentDate).toLocaleDateString()}
+      </h4>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr>
+              <th className="border-b-2 p-2">Item</th>
+              <th className="border-b-2 p-2">Quantity</th>
+              <th className="border-b-2 p-2">Price</th>
+              <th className="border-b-2 p-2">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {order.items.map((item, itemIndex) => (
+              <tr key={itemIndex} className="hover:bg-gray-100"> 
+                <td className="p-2">{item.name}</td> 
+                <td className="p-2">{item.quantity}</td>
+                <td className="p-2">${item.price.toFixed(2)}</td>
+                <td className="p-2">${(item.quantity * item.price).toFixed(2)}</td>
+              </tr>
+            ))}
+            <tr>
+              <td colSpan="3" className="text-right font-semibold p-2">
+                Order Total:
+              </td>
+              <td className="p-2">${order.amount.toFixed(2)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  ))}
+</div>
       </div>
     </>
   );

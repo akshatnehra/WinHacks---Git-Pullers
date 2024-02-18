@@ -77,11 +77,10 @@ const Home = () => {
 
   const handleClearSearch = () => {
     setSearchTerm("");
+    setSelectedCategory("All");
     setFilteredGames(
       games.filter((game) =>
-        selectedCategory === "All"
-          ? game.featured
-          : game.category === selectedCategory
+        selectedCategory === "All" ? game : game.category === selectedCategory
       )
     );
   };

@@ -12,6 +12,8 @@ import Signup from "./routes/Signup";
 import UserProfile from "./routes/UserProfile";
 import GameDetails from "./routes/GameDetails";
 import AddFunds from "./routes/AddFunds";
+import SuccessPayment from "./routes/SuccessPayment";
+import FailurePayment from "./routes/FailurePayment";
 
 const App = () => {
   return (
@@ -21,6 +23,19 @@ const App = () => {
         <Route path="cart" element={<Cart />} />
         <Route path="forget-password" element={<ForgetPassword />} />
         <Route path="/game/:gameId" element={<GameDetails />} />
+
+        <Route path="/success-payment" element={
+          <ProtectedRoute>
+            <SuccessPayment />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/failure-payment" element={
+          <ProtectedRoute>
+            <FailurePayment />
+          </ProtectedRoute>
+        } />
+        
         <Route path="/add-funds" element={
           <ProtectedRoute>
             <AddFunds />
