@@ -8,8 +8,12 @@ const wishlistRouter = require("./src/routes/wishlist.routes");
 const gameItemRouter = require("./src/routes/gameItem.routes");
 const orderRouter = require("./src/routes/order.routes");
 const paymentRouter = require("./src/routes/payment.routes");
+const cors = require("cors");
+
 
 const app = express();
+// Add cors middleware and allow requests from all origins
+app.use(cors());
 const port = 3000; // You can change this port if needed
 require("dotenv").config();
 

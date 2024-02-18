@@ -1,7 +1,14 @@
-import React, { useState } from "react";
-import NavBar from "../components/NavBar"; // Ensure correct import path
+import React, { useContext } from "react";
+import NavBar from "../components/NavBar";
+import CartContext from "../context/CartContext";
+import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { Navigate, useNavigate } from "react-router-dom";
 
-const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
+const CartItem = ({ item }) => {
+  const { removeFromCart, updateQuantity } = useContext(CartContext);
+  const itemTotal = (item.price * item.quantity).toFixed(2);
+
   return (
     <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow mb-4">
       <div className="flex items-center">
@@ -12,13 +19,18 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
         />
         <div>
           <h5 className="text-lg font-semibold">{item.title}</h5>
-          <p className="text-gray-600">${item.price.toFixed(2)} each</p>
+          <p className="text-gray-600">
+            ${parseFloat(item.price).toFixed(2)} each
+          </p>
         </div>
       </div>
       <div className="flex items-center">
+        <span className="text-sm font-medium text-gray-600 mr-2">
+          Total: ${itemTotal}
+        </span>
         <button
           onClick={() =>
-            onUpdateQuantity(item.id, Math.max(1, item.quantity - 1))
+            updateQuantity(item.id, Math.max(1, item.quantity - 1))
           }
           className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-2 rounded-l"
         >
@@ -26,13 +38,13 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
         </button>
         <span className="px-4">{item.quantity}</span>
         <button
-          onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+          onClick={() => updateQuantity(item.id, item.quantity + 1)}
           className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-2 rounded-r"
         >
           +
         </button>
         <button
-          onClick={() => onRemove(item.id)}
+          onClick={() => removeFromCart(item.id)}
           className="ml-4 text-red-500 hover:text-red-600"
         >
           Remove
@@ -43,89 +55,74 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
 };
 
 const Cart = () => {
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      title: "Epic Adventure Game",
-      price: 49.99,
-      quantity: 1,
-      imageUrl: "https://source.unsplash.com/random/200x200?sig=1",
-    },
-    {
-      id: 2,
-      title: "Space Explorer",
-      price: 59.99,
-      quantity: 2,
-      imageUrl: "https://source.unsplash.com/random/200x200?sig=2",
-    },
-  ]);
+  const { cartItems } = useContext(CartContext);
+  const [userWalletBalance, setUserWalletBalance] = useState(100.0); // Hardcoded wallet balance
 
-  // Example user wallet balance
-  const userWalletBalance = 200.0;
-
-  // Calculate total cart amount and remaining balance
   const totalCartAmount = cartItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
   );
-  const remainingBalance = userWalletBalance - totalCartAmount;
+  const isBalanceSufficient = userWalletBalance >= totalCartAmount;
 
-  const handleRemoveItem = (itemId) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
-  };
-
-  const handleUpdateQuantity = (itemId, newQuantity) => {
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === itemId ? { ...item, quantity: newQuantity } : item
-      )
-    );
-  };
-
+  const { currentUser } = useAuth();
+  let navigate = useNavigate();
   const handleCheckout = () => {
-    if (remainingBalance < 0) {
+    if (!currentUser) {
+      navigate("/login"); // Redirect to login if not logged in
+      return;
+    }
+
+    if (!isBalanceSufficient) {
       alert(
-        "Your wallet balance is insufficient for this purchase. Please remove some items or add funds."
+        "There is not enough balance in your wallet to complete this purchase."
       );
     } else {
-      alert("Checkout successful!");
-      // Here, implement the checkout logic, such as clearing the cart and updating the wallet balance
-      // For this example, we'll just clear the cart
-      setCartItems([]);
+      alert("Purchase successful!");
+      // Clear cart and perform other actions as needed
+      // setUserWalletBalance((prevBalance) => prevBalance - totalCartAmount);
+      // setCartItems([]);
     }
   };
 
   return (
     <>
-      <NavBar />
+      <NavBar
+        cartItemCount={cartItems.reduce(
+          (total, item) => total + item.quantity,
+          0
+        )}
+      />
       <div className="container mx-auto p-6">
         <h2 className="text-2xl font-semibold text-center mb-8">Your Cart</h2>
         {cartItems.map((item) => (
-          <CartItem
-            key={item.id}
-            item={item}
-            onRemove={handleRemoveItem}
-            onUpdateQuantity={handleUpdateQuantity}
-          />
+          <CartItem key={item.id} item={item} />
         ))}
         <div className="mt-6 p-4 bg-white rounded-lg shadow-md">
           <div className="flex justify-between items-center text-lg font-medium">
             <span>Total Cart Amount:</span>
             <span>${totalCartAmount.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between items-center text-lg font-medium mt-4">
-            <span>Remaining Wallet Balance:</span>
-            <span>${remainingBalance.toFixed(2)}</span>
-          </div>
+          {currentUser && (
+            <div className="flex justify-between items-center text-lg font-medium mt-2">
+              <span>Wallet Balance:</span>
+              <span>${userWalletBalance.toFixed(2)}</span>
+            </div>
+          )}
+          {!isBalanceSufficient && currentUser && (
+            <p className="text-red-500 text-sm mt-2">
+              Warning: You do not have enough funds in your wallet.
+            </p>
+          )}
           <button
             onClick={handleCheckout}
-            className={`w-full mt-6 text-white font-bold py-2 px-4 rounded ${
-              remainingBalance >= 0
+            className={`w-full mt-4 text-white font-bold py-2 px-4 rounded ${
+              isBalanceSufficient && currentUser
                 ? "bg-blue-500 hover:bg-blue-600"
-                : "bg-red-500 hover:bg-red-600"
+                : "bg-red-500 cursor-not-allowed"
             }`}
+            disabled={!isBalanceSufficient || !currentUser}
           >
-            {remainingBalance >= 0 ? "Checkout" : "Insufficient Balance"}
+            {currentUser ? "Purchase" : "Log In to Purchase"}
           </button>
         </div>
       </div>

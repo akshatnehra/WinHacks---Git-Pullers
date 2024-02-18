@@ -1,6 +1,7 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import NavBar from "../components/NavBar"; 
+import NavBar from "../components/NavBar";
+import { useCart } from "../context/CartContext";
 
 const GameDetails = () => {
   const { gameId } = useParams();
@@ -9,7 +10,7 @@ const GameDetails = () => {
   const game = {
     id: gameId,
     title: `Game Title ${gameId}`,
-    imageUrl: `https://source.unsplash.com/random/640x360?game&sig=${gameId}`, 
+    imageUrl: `https://source.unsplash.com/random/640x360?game&sig=${gameId}`,
     description:
       "Embark on a journey through mystical lands and unravel the mysteries of ancient powers. This game offers an immersive experience with stunning visuals, captivating storytelling, and dynamic gameplay. Join the adventure and become a legend.",
     price: "59.99",
@@ -18,6 +19,13 @@ const GameDetails = () => {
       `https://source.unsplash.com/random/640x360?gameplay&sig=${gameId + 2}`,
       `https://source.unsplash.com/random/640x360?gameplay&sig=${gameId + 3}`,
     ],
+  };
+
+  const { addToCart } = useCart();
+
+  const handleAddToCart = (game) => {
+    addToCart(game);
+    console.log("Added to cart:", game);
   };
 
   return (
@@ -39,10 +47,10 @@ const GameDetails = () => {
               <div className="flex justify-between items-center">
                 <span className="text-2xl font-bold text-purple-600">{`$${game.price}`}</span>
                 <div>
-                  <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 mr-2 rounded-3xl">
-                    Buy Now
-                  </button>
-                  <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-3xl">
+                  <button
+                    onClick={() => handleAddToCart(game)}
+                    className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-3xl"
+                  >
                     Add to Cart
                   </button>
                 </div>

@@ -21,7 +21,11 @@ const App = () => {
         <Route path="cart" element={<Cart />} />
         <Route path="forget-password" element={<ForgetPassword />} />
         <Route path="/game/:gameId" element={<GameDetails />} />
-        <Route path="/add-funds" element={<AddFunds />} />
+        <Route path="/add-funds" element={
+          <ProtectedRoute>
+            <AddFunds />
+          </ProtectedRoute>
+        } />
         <Route path="/login" element={
           <PublicRoute>
             <Login />
