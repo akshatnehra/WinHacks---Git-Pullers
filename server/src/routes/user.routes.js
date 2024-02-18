@@ -13,5 +13,9 @@ router.put("/:id", userController.updateUser);
 
 router.delete("/:id", userController.deleteUser);
 
+router.get("/:email", userController.getUserByEmail);
+
+router.post("/balance", userController.getUserBalance);
+
 module.exports = router;
 // Path: server/src/routes/user.routes.js

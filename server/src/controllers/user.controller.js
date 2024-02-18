@@ -15,8 +15,20 @@ async function getUserById(req, res) {
 
 // create user
 async function createUser(req, res) {
-  const user = await User.create(req.body);
-  res.json(user);
+  try {
+    const email = req.body.email;
+    // Generate a random long username 
+    const randomUsername = Math.random().toString(36).substring(7);
+    const user = new User({
+      email: email,
+      username: randomUsername,
+    });
+    const newUser = await user.save();
+    res.json(newUser);
+  } catch (error) {
+    console.error("Error creating user:", error);
+    res.status(500).json({ message: "Error creating user" });
+  }
 }
 
 // update user
@@ -33,10 +45,36 @@ async function deleteUser(req, res) {
   res.json({ message: "User deleted successfully" });
 }
 
+// Get user by email
+async function getUserByEmail(req, res) {
+  try {
+    const email = req.params.email;
+    const user = await User.findOne({ email: email });
+    res.json(user);
+  } catch (error) {
+    console.error("Error getting user by email:", error);
+    res.status(500).json({ message: "Error getting user by email" });
+  }
+}
+
+// Get user balance
+async function getUserBalance(req, res) {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email: email });
+    res.json({ balance: user.wallet_balance });
+  } catch (error) {
+    console.error("Error getting user balance:", error);
+    res.status(500).json({ message: "Error getting user balance" });
+  } 
+}
+
 module.exports = {
   getAllUsers,
   getUserById,
   createUser,
   updateUser,
   deleteUser,
+  getUserByEmail,
+  getUserBalance,
 };

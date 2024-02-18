@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import NavBar from "../components/NavBar";
 import CartContext from "../context/CartContext";
 import { useState } from "react";
@@ -56,7 +56,7 @@ const CartItem = ({ item }) => {
 
 const Cart = () => {
   const { cartItems } = useContext(CartContext);
-  const [userWalletBalance, setUserWalletBalance] = useState(100.0); // Hardcoded wallet balance
+  const [userWalletBalance, setUserWalletBalance] = useState(100.0);
 
   const totalCartAmount = cartItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
@@ -83,6 +83,31 @@ const Cart = () => {
       // setCartItems([]);
     }
   };
+
+  useEffect(() => {
+    const fetchUserWalletBalance = async () => {
+      const data = {
+        email: currentUser.email,
+      };
+
+      // Options for the fetch request
+      const requestOptions = {
+        method: "POST", // Specify the request method
+        headers: { "Content-Type": "application/json" }, // Headers to specify the type of content being sent
+        body: JSON.stringify(data), // Convert the JavaScript object to a JSON string
+      };
+
+      const url = import.meta.env.VITE_REACT_APP_BASE_URL + "/users/balance";
+      // Fetch user wallet balance from the server
+      fetch(url, requestOptions)
+        .then((response) => response.json()) // Convert the response data to JSON
+        .then((data) => setUserWalletBalance(data.balance)) // Handle the JSON data/response
+        .catch((error) => console.error("Error:", error)); // Catch and log any errors
+    };
+    if (currentUser) {
+      fetchUserWalletBalance();
+    }
+  }, [userWalletBalance, cartItems]);
 
   return (
     <>
